@@ -25,30 +25,46 @@ export function getNewChangeSkillTemplate(): SkillTemplate {
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Determine the workflow schema**
+2. **Assess change complexity — recommend the right tier**
+
+   Based on the description, classify the change:
+
+   | Tier | When to use | Signals |
+   |------|-------------|---------|
+   | A – Direct PR | Trivial change | Typo, formatting, comment-only, non-semantic refactor with obvious intent |
+   | B – Lightweight OpenSpec | Small, low-risk | Minor UX/config tweak, refactor with preserved behavior; no API, data, or security impact |
+   | C – Full OpenSpec | Meaningful change | Behavior change, API/contract, migration, security/privacy, cross-team, multi-iteration |
+
+   **Act on the tier before proceeding:**
+   - **Tier A**: Tell the user: "This looks like a trivial change — a direct PR is probably sufficient. OpenSpec may be overkill here. Do you still want to create a change?" Use **AskUserQuestion** to confirm. Stop if they decline.
+   - **Tier B**: Tell the user: "This is a small change. A lightweight schema (proposal + tasks only) would reduce overhead. Want me to pick a lightweight schema, or proceed with the default?" Use **AskUserQuestion**. If lightweight: run \`openspec schemas --json\` to find a minimal schema and suggest it. If full: proceed normally.
+   - **Tier C**: Proceed without prompting.
+
+3. **Determine the workflow schema**
 
    Use the default schema (omit \`--schema\`) unless the user explicitly requests a different workflow.
 
    **Use a different schema only if the user mentions:**
    - A specific schema name → use \`--schema <name>\`
    - "show workflows" or "what workflows" → run \`openspec schemas --json\` and let them choose
+   - A lightweight tier was chosen in step 2 → use the schema selected there
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
-3. **Create the change directory**
+4. **Create the change directory**
    \`\`\`bash
    openspec new change "<name>"
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
    This creates a scaffolded change at \`openspec/changes/<name>/\` with the selected schema.
 
-4. **Show the artifact status**
+5. **Show the artifact status**
    \`\`\`bash
    openspec status --change "<name>"
    \`\`\`
    This shows which artifacts need to be created and which are ready (dependencies satisfied).
 
-5. **Get instructions for the first artifact**
+6. **Get instructions for the first artifact**
    The first artifact depends on the schema (e.g., \`proposal\` for spec-driven).
    Check the status output to find the first artifact with status "ready".
    \`\`\`bash
@@ -56,7 +72,7 @@ export function getNewChangeSkillTemplate(): SkillTemplate {
    \`\`\`
    This outputs the template and context for creating the first artifact.
 
-6. **STOP and wait for user direction**
+7. **STOP and wait for user direction**
 
 **Output**
 
@@ -100,37 +116,53 @@ export function getOpsxNewCommandTemplate(): CommandTemplate {
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Determine the workflow schema**
+2. **Assess change complexity — recommend the right tier**
+
+   Based on the description, classify the change:
+
+   | Tier | When to use | Signals |
+   |------|-------------|---------|
+   | A – Direct PR | Trivial change | Typo, formatting, comment-only, non-semantic refactor with obvious intent |
+   | B – Lightweight OpenSpec | Small, low-risk | Minor UX/config tweak, refactor with preserved behavior; no API, data, or security impact |
+   | C – Full OpenSpec | Meaningful change | Behavior change, API/contract, migration, security/privacy, cross-team, multi-iteration |
+
+   **Act on the tier before proceeding:**
+   - **Tier A**: Tell the user: "This looks like a trivial change — a direct PR is probably sufficient. OpenSpec may be overkill here. Do you still want to create a change?" Use **AskUserQuestion** to confirm. Stop if they decline.
+   - **Tier B**: Tell the user: "This is a small change. A lightweight schema (proposal + tasks only) would reduce overhead. Want me to pick a lightweight schema, or proceed with the default?" Use **AskUserQuestion**. If lightweight: run \`openspec schemas --json\` to find a minimal schema and suggest it. If full: proceed normally.
+   - **Tier C**: Proceed without prompting.
+
+3. **Determine the workflow schema**
 
    Use the default schema (omit \`--schema\`) unless the user explicitly requests a different workflow.
 
    **Use a different schema only if the user mentions:**
    - A specific schema name → use \`--schema <name>\`
    - "show workflows" or "what workflows" → run \`openspec schemas --json\` and let them choose
+   - A lightweight tier was chosen in step 2 → use the schema selected there
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
-3. **Create the change directory**
+4. **Create the change directory**
    \`\`\`bash
    openspec new change "<name>"
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
    This creates a scaffolded change at \`openspec/changes/<name>/\` with the selected schema.
 
-4. **Show the artifact status**
+5. **Show the artifact status**
    \`\`\`bash
    openspec status --change "<name>"
    \`\`\`
    This shows which artifacts need to be created and which are ready (dependencies satisfied).
 
-5. **Get instructions for the first artifact**
+6. **Get instructions for the first artifact**
    The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
    \`\`\`bash
    openspec instructions <first-artifact-id> --change "<name>"
    \`\`\`
    This outputs the template and context for creating the first artifact.
 
-6. **STOP and wait for user direction**
+7. **STOP and wait for user direction**
 
 **Output**
 

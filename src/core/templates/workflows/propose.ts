@@ -34,7 +34,22 @@ When ready to implement, run /opsx:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Determine if this is a single-scope or cross-scope change**
+2. **Assess change complexity — recommend the right tier**
+
+   Based on the description, classify the change:
+
+   | Tier | When to use | Signals |
+   |------|-------------|---------|
+   | A – Direct PR | Trivial change | Typo, formatting, comment-only, non-semantic refactor with obvious intent |
+   | B – Lightweight OpenSpec | Small, low-risk | Minor UX/config tweak, refactor with preserved behavior; no API, data, or security impact |
+   | C – Full OpenSpec | Meaningful change | Behavior change, API/contract, migration, security/privacy, cross-team, multi-iteration |
+
+   **Act on the tier before proceeding:**
+   - **Tier A**: Tell the user: "This looks like a trivial change — a direct PR is probably sufficient. OpenSpec may be overkill here. Do you still want to create a full change proposal?" Use **AskUserQuestion** to confirm. Stop if they decline.
+   - **Tier B**: Tell the user: "This is a small change. A lightweight schema (proposal + tasks only) would reduce overhead. Want me to use a lightweight approach, or proceed with the full workflow?" Use **AskUserQuestion**. If lightweight: run \`openspec schemas --json\` to find a minimal schema and pass \`--schema <name>\` when creating the change. If full: proceed normally.
+   - **Tier C**: Proceed without prompting.
+
+3. **Determine if this is a single-scope or cross-scope change**
 
    Check for a workspace manifest:
    \`\`\`bash
@@ -43,24 +58,24 @@ When ready to implement, run /opsx:apply
 
    If workspace.yaml exists:
    - Based on the description, ask: "Does this change touch more than one scope?"
-   - If **single scope**: ask which scope (show list from workspace.yaml). Store as \`<workspace>\`. Continue to step 3.
+   - If **single scope**: ask which scope (show list from workspace.yaml). Store as \`<workspace>\`. Continue to step 4.
    - If **cross-scope (umbrella)**: jump to **Umbrella Flow** section below.
 
    If no workspace.yaml (single-project):
-   - \`<workspace>\` is the current directory. Skip to step 3.
+   - \`<workspace>\` is the current directory. Skip to step 4.
 
    All \`openspec\` commands must be run as:
    \`\`\`bash
    (cd <workspace> && openspec ...)
    \`\`\`
 
-3. **Create the change directory**
+4. **Create the change directory**
    \`\`\`bash
    (cd <workspace> && openspec new change "<name>")
    \`\`\`
    This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\` with \`.openspec.yaml\`.
 
-4. **Get the artifact build order**
+5. **Get the artifact build order**
    \`\`\`bash
    (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
@@ -68,7 +83,7 @@ When ready to implement, run /opsx:apply
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-5. **Create artifacts in sequence until apply-ready**
+6. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -100,7 +115,7 @@ When ready to implement, run /opsx:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-6. **Show final status**
+7. **Show final status**
    \`\`\`bash
    (cd <workspace> && openspec status --change "<name>")
    \`\`\`
@@ -190,7 +205,22 @@ When ready to implement, run /opsx:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Determine if this is a single-scope or cross-scope change**
+2. **Assess change complexity — recommend the right tier**
+
+   Based on the description, classify the change:
+
+   | Tier | When to use | Signals |
+   |------|-------------|---------|
+   | A – Direct PR | Trivial change | Typo, formatting, comment-only, non-semantic refactor with obvious intent |
+   | B – Lightweight OpenSpec | Small, low-risk | Minor UX/config tweak, refactor with preserved behavior; no API, data, or security impact |
+   | C – Full OpenSpec | Meaningful change | Behavior change, API/contract, migration, security/privacy, cross-team, multi-iteration |
+
+   **Act on the tier before proceeding:**
+   - **Tier A**: Tell the user: "This looks like a trivial change — a direct PR is probably sufficient. OpenSpec may be overkill here. Do you still want to create a full change proposal?" Use **AskUserQuestion** to confirm. Stop if they decline.
+   - **Tier B**: Tell the user: "This is a small change. A lightweight schema (proposal + tasks only) would reduce overhead. Want me to use a lightweight approach, or proceed with the full workflow?" Use **AskUserQuestion**. If lightweight: run \`openspec schemas --json\` to find a minimal schema and pass \`--schema <name>\` when creating the change. If full: proceed normally.
+   - **Tier C**: Proceed without prompting.
+
+3. **Determine if this is a single-scope or cross-scope change**
 
    Check for a workspace manifest:
    \`\`\`bash
@@ -199,24 +229,24 @@ When ready to implement, run /opsx:apply
 
    If workspace.yaml exists:
    - Based on the description, ask: "Does this change touch more than one scope?"
-   - If **single scope**: ask which scope (show list from workspace.yaml). Store as \`<workspace>\`. Continue to step 3.
+   - If **single scope**: ask which scope (show list from workspace.yaml). Store as \`<workspace>\`. Continue to step 4.
    - If **cross-scope (umbrella)**: jump to **Umbrella Flow** section below.
 
    If no workspace.yaml (single-project):
-   - \`<workspace>\` is the current directory. Skip to step 3.
+   - \`<workspace>\` is the current directory. Skip to step 4.
 
    All \`openspec\` commands must be run as:
    \`\`\`bash
    (cd <workspace> && openspec ...)
    \`\`\`
 
-3. **Create the change directory**
+4. **Create the change directory**
    \`\`\`bash
    (cd <workspace> && openspec new change "<name>")
    \`\`\`
    This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\` with \`.openspec.yaml\`.
 
-4. **Get the artifact build order**
+5. **Get the artifact build order**
    \`\`\`bash
    (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
@@ -224,7 +254,7 @@ When ready to implement, run /opsx:apply
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-5. **Create artifacts in sequence until apply-ready**
+6. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -256,7 +286,7 @@ When ready to implement, run /opsx:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-6. **Show final status**
+7. **Show final status**
    \`\`\`bash
    (cd <workspace> && openspec status --change "<name>")
    \`\`\`
