@@ -45,6 +45,7 @@ import { getGlobalConfig, type Delivery, type Profile } from './global-config.js
 import { getProfileWorkflows, CORE_WORKFLOWS, ALL_WORKFLOWS } from './profiles.js';
 import { getAvailableTools } from './available-tools.js';
 import { migrateIfNeeded } from './migration.js';
+import { detectMonorepoScopes, writeWorkspaceConfig, isWorkspace } from './workspace.js';
 
 const require = createRequire(import.meta.url);
 const { version: OPENSPEC_VERSION } = require('../../package.json');
@@ -143,6 +144,9 @@ export class InitCommand {
 
     // Create directory structure and config
     await this.createDirectoryStructure(openspecPath, extendMode);
+
+    // Detect monorepo and offer workspace setup
+    await this.handleWorkspaceDetection(projectPath, extendMode);
 
     // Generate skills and commands for each tool
     const results = await this.generateSkillsAndCommands(projectPath, validatedTools);
@@ -589,6 +593,45 @@ export class InitCommand {
       removedCommandCount,
       removedSkillCount,
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // WORKSPACE DETECTION
+  // ═══════════════════════════════════════════════════════════
+
+  private async handleWorkspaceDetection(projectPath: string, extendMode: boolean): Promise<void> {
+    if (isWorkspace(projectPath)) {
+      return;
+    }
+
+    const scopes = detectMonorepoScopes(projectPath);
+    if (scopes.length === 0) {
+      return;
+    }
+
+    const canPrompt = this.canPromptInteractively();
+
+    if (!canPrompt) {
+      return;
+    }
+
+    const { confirm } = await import('@inquirer/prompts');
+    const shouldCreate = await confirm({
+      message: 'This looks like a monorepo. Create a workspace.yaml to enable multi-scope support? (recommended)',
+      default: true,
+    });
+
+    if (!shouldCreate) {
+      return;
+    }
+
+    writeWorkspaceConfig(projectPath, { scopes });
+
+    const openspecChangesDir = path.join(projectPath, OPENSPEC_DIR_NAME, 'changes');
+    await FileSystemUtils.createDirectory(openspecChangesDir);
+
+    const scopeNames = scopes.map((s) => s.name).join(', ');
+    console.log(chalk.dim(`Workspace created with scopes: ${scopeNames}`));
   }
 
   // ═══════════════════════════════════════════════════════════
