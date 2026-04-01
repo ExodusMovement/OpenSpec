@@ -222,7 +222,8 @@ export class UpdateCommand {
 
             for (const cmd of generatedCommands) {
               const commandFile = path.isAbsolute(cmd.path) ? cmd.path : path.join(resolvedProjectPath, cmd.path);
-              await FileSystemUtils.writeFile(commandFile, cmd.fileContent);
+              const commandContent = cliTransformer ? cliTransformer(cmd.fileContent) : cmd.fileContent;
+              await FileSystemUtils.writeFile(commandFile, commandContent);
             }
 
             removedDeselectedCommandCount += await this.removeUnselectedCommandFiles(
@@ -691,7 +692,8 @@ export class UpdateCommand {
 
             for (const cmd of generatedCommands) {
               const commandFile = path.isAbsolute(cmd.path) ? cmd.path : path.join(projectPath, cmd.path);
-              await FileSystemUtils.writeFile(commandFile, cmd.fileContent);
+              const commandContent = legacyCliTransformer ? legacyCliTransformer(cmd.fileContent) : cmd.fileContent;
+              await FileSystemUtils.writeFile(commandFile, commandContent);
             }
           }
         }

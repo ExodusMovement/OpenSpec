@@ -570,7 +570,8 @@ export class InitCommand {
 
             for (const cmd of generatedCommands) {
               const commandFile = path.isAbsolute(cmd.path) ? cmd.path : path.join(projectPath, cmd.path);
-              await FileSystemUtils.writeFile(commandFile, cmd.fileContent);
+              const commandContent = cliTransformer ? cliTransformer(cmd.fileContent) : cmd.fileContent;
+              await FileSystemUtils.writeFile(commandFile, commandContent);
             }
           } else {
             commandsSkipped.push(tool.value);
