@@ -11,7 +11,8 @@ import ora from 'ora';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { FileSystemUtils } from '../utils/file-system.js';
-import { transformToHyphenCommands } from '../utils/command-references.js';
+import { transformToHyphenCommands, createCliTransformer } from '../utils/command-references.js';
+import { readProjectConfig } from './project-config.js';
 import { AI_TOOLS, OPENSPEC_DIR_NAME } from './config.js';
 import {
   generateCommands,
@@ -167,6 +168,8 @@ export class UpdateCommand {
     console.log();
 
     // 9. Determine what to generate based on delivery
+    const projectConfig = readProjectConfig(resolvedProjectPath);
+    const cliTransformer = createCliTransformer(projectConfig?.cli);
     const skillTemplates = shouldGenerateSkills ? getSkillTemplates(desiredWorkflows) : [];
     const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows) : [];
 
@@ -194,8 +197,11 @@ export class UpdateCommand {
             const skillDir = path.join(skillsDir, dirName);
             const skillFile = path.join(skillDir, 'SKILL.md');
 
-            // Use hyphen-based command references for OpenCode
-            const transformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            // Use hyphen-based command references for OpenCode; apply cli override if set
+            const toolTransformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            const transformer = cliTransformer && toolTransformer
+              ? (text: string) => cliTransformer(toolTransformer(text))
+              : cliTransformer ?? toolTransformer;
             const skillContent = generateSkillContent(template, OPENSPEC_VERSION, transformer);
             await FileSystemUtils.writeFile(skillFile, skillContent);
           }
@@ -647,6 +653,8 @@ export class UpdateCommand {
     const newlyConfigured: string[] = [];
     const shouldGenerateSkills = delivery !== 'commands';
     const shouldGenerateCommands = delivery !== 'skills';
+    const legacyProjectConfig = readProjectConfig(projectPath);
+    const legacyCliTransformer = createCliTransformer(legacyProjectConfig?.cli);
     const skillTemplates = shouldGenerateSkills ? getSkillTemplates(desiredWorkflows) : [];
     const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows) : [];
 
@@ -665,8 +673,11 @@ export class UpdateCommand {
             const skillDir = path.join(skillsDir, dirName);
             const skillFile = path.join(skillDir, 'SKILL.md');
 
-            // Use hyphen-based command references for OpenCode
-            const transformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            // Use hyphen-based command references for OpenCode; apply cli override if set
+            const toolTransformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            const transformer = legacyCliTransformer && toolTransformer
+              ? (text: string) => legacyCliTransformer(toolTransformer(text))
+              : legacyCliTransformer ?? toolTransformer;
             const skillContent = generateSkillContent(template, OPENSPEC_VERSION, transformer);
             await FileSystemUtils.writeFile(skillFile, skillContent);
           }

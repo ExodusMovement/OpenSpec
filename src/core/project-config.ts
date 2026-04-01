@@ -38,6 +38,15 @@ export const ProjectConfigSchema = z.object({
     )
     .optional()
     .describe('Per-artifact rules, keyed by artifact ID'),
+
+  // Optional: CLI command to use for openspec invocations in generated skills
+  // Useful when openspec is only installed at a monorepo root (e.g., pnpm workspaces)
+  // Example: "pnpm exec openspec" or "npx @exodus/openspec"
+  cli: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('CLI command used to invoke openspec in generated skill files'),
 });
 
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
@@ -149,6 +158,17 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
         }
       } else {
         console.warn(`Invalid 'rules' field in config (must be object)`);
+      }
+    }
+
+    // Parse cli field using Zod
+    if (raw.cli !== undefined) {
+      const cliField = z.string().min(1);
+      const cliResult = cliField.safeParse(raw.cli);
+      if (cliResult.success) {
+        config.cli = cliResult.data;
+      } else {
+        console.warn(`Invalid 'cli' field in config (must be non-empty string)`);
       }
     }
 

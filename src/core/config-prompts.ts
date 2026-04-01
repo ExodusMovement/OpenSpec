@@ -34,6 +34,13 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
   lines.push('#       - Always include a "Non-goals" section');
   lines.push('#     tasks:');
   lines.push('#       - Break tasks into chunks of max 2 hours');
+  lines.push('');
+  lines.push('# CLI command (optional)');
+  lines.push('# Override the `openspec` command used in generated skill files.');
+  lines.push('# Useful when openspec is only installed at a monorepo root.');
+  lines.push('# Example:');
+  lines.push('#   cli: pnpm exec openspec');
+  lines.push('#   cli: npx @exodus/openspec');
 
   return lines.join('\n') + '\n';
 }

@@ -11,7 +11,8 @@ import ora from 'ora';
 import * as fs from 'fs';
 import { createRequire } from 'module';
 import { FileSystemUtils } from '../utils/file-system.js';
-import { transformToHyphenCommands } from '../utils/command-references.js';
+import { transformToHyphenCommands, createCliTransformer } from '../utils/command-references.js';
+import { readProjectConfig } from './project-config.js';
 import {
   AI_TOOLS,
   OPENSPEC_DIR_NAME,
@@ -519,6 +520,10 @@ export class InitCommand {
     const delivery: Delivery = globalConfig.delivery ?? 'both';
     const workflows = getProfileWorkflows(profile, globalConfig.workflows);
 
+    // Read project config for cli override
+    const projectConfig = readProjectConfig(projectPath);
+    const cliTransformer = createCliTransformer(projectConfig?.cli);
+
     // Get skill and command templates filtered by profile workflows
     const shouldGenerateSkills = delivery !== 'commands';
     const shouldGenerateCommands = delivery !== 'skills';
@@ -541,8 +546,11 @@ export class InitCommand {
             const skillFile = path.join(skillDir, 'SKILL.md');
 
             // Generate SKILL.md content with YAML frontmatter including generatedBy
-            // Use hyphen-based command references for OpenCode
-            const transformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            // Use hyphen-based command references for OpenCode; apply cli override if set
+            const toolTransformer = tool.value === 'opencode' ? transformToHyphenCommands : undefined;
+            const transformer = cliTransformer && toolTransformer
+              ? (text: string) => cliTransformer(toolTransformer(text))
+              : cliTransformer ?? toolTransformer;
             const skillContent = generateSkillContent(template, OPENSPEC_VERSION, transformer);
 
             // Write the skill file
