@@ -21,21 +21,23 @@ export function transformToHyphenCommands(text: string): string {
 
 /**
  * Creates a transformer that replaces bare `openspec` CLI invocations with a custom command.
- * Only replaces command invocations (backtick-quoted or after `&&`), not path references
- * like `openspec/changes/`.
+ * Only replaces command invocations (backtick-quoted, after `&&`, or at line start),
+ * not path references like `openspec/changes/`.
  *
  * @param cli - The CLI command to use instead of bare `openspec`
  * @returns Transformer function, or undefined if cli is not set
  *
  * @example
  * const t = createCliTransformer('pnpm exec openspec');
- * t('`openspec list --json`') // '`pnpm exec openspec list --json`'
- * t('openspec/changes/foo')   // 'openspec/changes/foo' (path unchanged)
+ * t('`openspec list --json`')        // '`pnpm exec openspec list --json`'
+ * t('openspec status --change "x"')  // 'pnpm exec openspec status --change "x"' (line-start)
+ * t('openspec/changes/foo')          // 'openspec/changes/foo' (path unchanged)
  */
 export function createCliTransformer(cli: string | undefined): ((text: string) => string) | undefined {
   if (!cli) return undefined;
   return (text: string) =>
     text
       .replace(/`openspec\s/g, `\`${cli} `)
-      .replace(/&& openspec\s/g, `&& ${cli} `);
+      .replace(/&& openspec\s/g, `&& ${cli} `)
+      .replace(/^(\s*)openspec\s/gm, `$1${cli} `);
 }
