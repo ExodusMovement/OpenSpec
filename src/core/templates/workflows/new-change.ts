@@ -35,33 +35,49 @@ export function getNewChangeSkillTemplate(): SkillTemplate {
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
-3. **Create the change directory**
+3. **Detect workspace and select scope**
+
+   Check for a workspace manifest:
    \`\`\`bash
-   openspec new change "<name>"
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, ask which scope this change belongs to (show the list of scopes from workspace.yaml). Store the selected scope's path as \`<workspace>\`.
+
+   If no workspace.yaml (single-project), set \`<workspace>\` to the current directory.
+
+   All subsequent \`openspec\` commands must run as:
+   \`\`\`bash
+   (cd <workspace> && openspec ...)
+   \`\`\`
+
+4. **Create the change directory**
+   \`\`\`bash
+   (cd <workspace> && openspec new change "<name>")
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
-   This creates a scaffolded change at \`openspec/changes/<name>/\` with the selected schema.
+   This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\` with the selected schema.
 
-4. **Show the artifact status**
+5. **Show the artifact status**
    \`\`\`bash
-   openspec status --change "<name>"
+   (cd <workspace> && openspec status --change "<name>")
    \`\`\`
    This shows which artifacts need to be created and which are ready (dependencies satisfied).
 
-5. **Get instructions for the first artifact**
+6. **Get instructions for the first artifact**
    The first artifact depends on the schema (e.g., \`proposal\` for spec-driven).
    Check the status output to find the first artifact with status "ready".
    \`\`\`bash
-   openspec instructions <first-artifact-id> --change "<name>"
+   (cd <workspace> && openspec instructions <first-artifact-id> --change "<name>")
    \`\`\`
    This outputs the template and context for creating the first artifact.
 
-6. **STOP and wait for user direction**
+7. **STOP and wait for user direction**
 
 **Output**
 
 After completing the steps, summarize:
-- Change name and location
+- Change name and location (including scope if in a workspace)
 - Schema/workflow being used and its artifact sequence
 - Current status (0/N artifacts complete)
 - The template for the first artifact
@@ -110,32 +126,48 @@ export function getOpsxNewCommandTemplate(): CommandTemplate {
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
-3. **Create the change directory**
+3. **Detect workspace and select scope**
+
+   Check for a workspace manifest:
    \`\`\`bash
-   openspec new change "<name>"
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, ask which scope this change belongs to (show the list of scopes from workspace.yaml). Store the selected scope's path as \`<workspace>\`.
+
+   If no workspace.yaml (single-project), set \`<workspace>\` to the current directory.
+
+   All subsequent \`openspec\` commands must run as:
+   \`\`\`bash
+   (cd <workspace> && openspec ...)
+   \`\`\`
+
+4. **Create the change directory**
+   \`\`\`bash
+   (cd <workspace> && openspec new change "<name>")
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
-   This creates a scaffolded change at \`openspec/changes/<name>/\` with the selected schema.
+   This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\` with the selected schema.
 
-4. **Show the artifact status**
+5. **Show the artifact status**
    \`\`\`bash
-   openspec status --change "<name>"
+   (cd <workspace> && openspec status --change "<name>")
    \`\`\`
    This shows which artifacts need to be created and which are ready (dependencies satisfied).
 
-5. **Get instructions for the first artifact**
+6. **Get instructions for the first artifact**
    The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
    \`\`\`bash
-   openspec instructions <first-artifact-id> --change "<name>"
+   (cd <workspace> && openspec instructions <first-artifact-id> --change "<name>")
    \`\`\`
    This outputs the template and context for creating the first artifact.
 
-6. **STOP and wait for user direction**
+7. **STOP and wait for user direction**
 
 **Output**
 
 After completing the steps, summarize:
-- Change name and location
+- Change name and location (including scope if in a workspace)
 - Schema/workflow being used and its artifact sequence
 - Current status (0/N artifacts complete)
 - The template for the first artifact

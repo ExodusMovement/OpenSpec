@@ -25,21 +25,37 @@ export function getFfChangeSkillTemplate(): SkillTemplate {
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
-   \`\`\`bash
-   openspec new change "<name>"
-   \`\`\`
-   This creates a scaffolded change at \`openspec/changes/<name>/\`.
+2. **Detect workspace and select scope**
 
-3. **Get the artifact build order**
+   Check for a workspace manifest:
    \`\`\`bash
-   openspec status --change "<name>" --json
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, ask which scope this change belongs to (show the list of scopes from workspace.yaml). Store the selected scope's path as \`<workspace>\`.
+
+   If no workspace.yaml (single-project), set \`<workspace>\` to the current directory.
+
+   All subsequent \`openspec\` commands must run as:
+   \`\`\`bash
+   (cd <workspace> && openspec ...)
+   \`\`\`
+
+3. **Create the change directory**
+   \`\`\`bash
+   (cd <workspace> && openspec new change "<name>")
+   \`\`\`
+   This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\`.
+
+4. **Get the artifact build order**
+   \`\`\`bash
+   (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
    Parse the JSON to get:
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-4. **Create artifacts in sequence until apply-ready**
+5. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -48,7 +64,7 @@ export function getFfChangeSkillTemplate(): SkillTemplate {
    a. **For each artifact that is \`ready\` (dependencies satisfied)**:
       - Get instructions:
         \`\`\`bash
-        openspec instructions <artifact-id> --change "<name>" --json
+        (cd <workspace> && openspec instructions <artifact-id> --change "<name>" --json)
         \`\`\`
       - The instructions JSON includes:
         - \`context\`: Project background (constraints for you - do NOT include in output)
@@ -63,7 +79,7 @@ export function getFfChangeSkillTemplate(): SkillTemplate {
       - Show brief progress: "✓ Created <artifact-id>"
 
    b. **Continue until all \`applyRequires\` artifacts are complete**
-      - After creating each artifact, re-run \`openspec status --change "<name>" --json\`
+      - After creating each artifact, re-run \`(cd <workspace> && openspec status --change "<name>" --json)\`
       - Check if every artifact ID in \`applyRequires\` has \`status: "done"\` in the artifacts array
       - Stop when all \`applyRequires\` artifacts are done
 
@@ -71,15 +87,15 @@ export function getFfChangeSkillTemplate(): SkillTemplate {
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+6. **Show final status**
    \`\`\`bash
-   openspec status --change "<name>"
+   (cd <workspace> && openspec status --change "<name>")
    \`\`\`
 
 **Output**
 
 After completing all artifacts, summarize:
-- Change name and location
+- Change name and location (including scope if in a workspace)
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run \`/opsx:apply\` or ask me to implement to start working on the tasks."
@@ -127,21 +143,37 @@ export function getOpsxFfCommandTemplate(): CommandTemplate {
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
-   \`\`\`bash
-   openspec new change "<name>"
-   \`\`\`
-   This creates a scaffolded change at \`openspec/changes/<name>/\`.
+2. **Detect workspace and select scope**
 
-3. **Get the artifact build order**
+   Check for a workspace manifest:
    \`\`\`bash
-   openspec status --change "<name>" --json
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, ask which scope this change belongs to (show the list of scopes from workspace.yaml). Store the selected scope's path as \`<workspace>\`.
+
+   If no workspace.yaml (single-project), set \`<workspace>\` to the current directory.
+
+   All subsequent \`openspec\` commands must run as:
+   \`\`\`bash
+   (cd <workspace> && openspec ...)
+   \`\`\`
+
+3. **Create the change directory**
+   \`\`\`bash
+   (cd <workspace> && openspec new change "<name>")
+   \`\`\`
+   This creates a scaffolded change at \`<workspace>/openspec/changes/<name>/\`.
+
+4. **Get the artifact build order**
+   \`\`\`bash
+   (cd <workspace> && openspec status --change "<name>" --json)
    \`\`\`
    Parse the JSON to get:
    - \`applyRequires\`: array of artifact IDs needed before implementation (e.g., \`["tasks"]\`)
    - \`artifacts\`: list of all artifacts with their status and dependencies
 
-4. **Create artifacts in sequence until apply-ready**
+5. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -150,7 +182,7 @@ export function getOpsxFfCommandTemplate(): CommandTemplate {
    a. **For each artifact that is \`ready\` (dependencies satisfied)**:
       - Get instructions:
         \`\`\`bash
-        openspec instructions <artifact-id> --change "<name>" --json
+        (cd <workspace> && openspec instructions <artifact-id> --change "<name>" --json)
         \`\`\`
       - The instructions JSON includes:
         - \`context\`: Project background (constraints for you - do NOT include in output)
@@ -165,7 +197,7 @@ export function getOpsxFfCommandTemplate(): CommandTemplate {
       - Show brief progress: "✓ Created <artifact-id>"
 
    b. **Continue until all \`applyRequires\` artifacts are complete**
-      - After creating each artifact, re-run \`openspec status --change "<name>" --json\`
+      - After creating each artifact, re-run \`(cd <workspace> && openspec status --change "<name>" --json)\`
       - Check if every artifact ID in \`applyRequires\` has \`status: "done"\` in the artifacts array
       - Stop when all \`applyRequires\` artifacts are done
 
@@ -173,15 +205,15 @@ export function getOpsxFfCommandTemplate(): CommandTemplate {
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+6. **Show final status**
    \`\`\`bash
-   openspec status --change "<name>"
+   (cd <workspace> && openspec status --change "<name>")
    \`\`\`
 
 **Output**
 
 After completing all artifacts, summarize:
-- Change name and location
+- Change name and location (including scope if in a workspace)
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run \`/opsx:apply\` to start implementing."

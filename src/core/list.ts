@@ -4,12 +4,17 @@ import { getTaskProgressForChange, formatTaskStatus } from '../utils/task-progre
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { MarkdownParser } from './parsers/markdown-parser.js';
+import { readWorkspaceConfig, type WorkspaceConfig } from './workspace.js';
 
 interface ChangeInfo {
   name: string;
   completedTasks: number;
   totalTasks: number;
   lastModified: Date;
+}
+
+interface ScopedChangeInfo extends ChangeInfo {
+  scope: string | null;
 }
 
 interface ListOptions {
@@ -79,6 +84,12 @@ export class ListCommand {
     const { sort = 'recent', json = false } = options;
 
     if (mode === 'changes') {
+      const workspace = readWorkspaceConfig(targetPath);
+      if (workspace) {
+        await this.executeWorkspaceChanges(targetPath, workspace, { sort, json });
+        return;
+      }
+
       const changesDir = path.join(targetPath, 'openspec', 'changes');
 
       // Check if changes directory exists
@@ -189,6 +200,82 @@ export class ListCommand {
     for (const spec of specs) {
       const padded = spec.id.padEnd(nameWidth);
       console.log(`${padding}${padded}     requirements ${spec.requirementCount}`);
+    }
+  }
+
+  private async executeWorkspaceChanges(
+    targetPath: string,
+    workspace: WorkspaceConfig,
+    options: { sort: 'recent' | 'name'; json: boolean }
+  ): Promise<void> {
+    const changes: ScopedChangeInfo[] = [];
+
+    const collectChanges = async (dir: string, scope: string | null) => {
+      try {
+        await fs.access(dir);
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        const changeDirs = entries
+          .filter(e => e.isDirectory() && e.name !== 'archive')
+          .map(e => e.name);
+        for (const changeDir of changeDirs) {
+          const progress = await getTaskProgressForChange(dir, changeDir);
+          const changePath = path.join(dir, changeDir);
+          const lastModified = await getLastModified(changePath);
+          changes.push({ name: changeDir, scope, completedTasks: progress.completed, totalTasks: progress.total, lastModified });
+        }
+      } catch {
+        // directory doesn't exist — skip
+      }
+    };
+
+    await collectChanges(path.join(targetPath, 'openspec', 'changes'), null);
+    for (const scope of workspace.scopes) {
+      const scopeRoot = path.resolve(targetPath, scope.path);
+      await collectChanges(path.join(scopeRoot, 'openspec', 'changes'), scope.name);
+    }
+
+    if (changes.length === 0) {
+      if (options.json) {
+        console.log(JSON.stringify({ changes: [] }));
+      } else {
+        console.log('No active changes found.');
+      }
+      return;
+    }
+
+    if (options.sort === 'recent') {
+      changes.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+    } else {
+      changes.sort((a, b) => {
+        const scopeA = a.scope ?? '';
+        const scopeB = b.scope ?? '';
+        return scopeA !== scopeB ? scopeA.localeCompare(scopeB) : a.name.localeCompare(b.name);
+      });
+    }
+
+    if (options.json) {
+      const jsonOutput = changes.map(c => ({
+        name: c.name,
+        scope: c.scope,
+        completedTasks: c.completedTasks,
+        totalTasks: c.totalTasks,
+        lastModified: c.lastModified.toISOString(),
+        status: c.totalTasks === 0 ? 'no-tasks' : c.completedTasks === c.totalTasks ? 'complete' : 'in-progress',
+      }));
+      console.log(JSON.stringify({ changes: jsonOutput }, null, 2));
+      return;
+    }
+
+    console.log('Changes:');
+    const padding = '  ';
+    const nameWidth = Math.max(...changes.map(c => c.name.length));
+    const scopeWidth = Math.max(...changes.map(c => (c.scope ?? 'root').length)) + 2;
+    for (const change of changes) {
+      const scopeLabel = `[${change.scope ?? 'root'}]`.padEnd(scopeWidth);
+      const paddedName = change.name.padEnd(nameWidth);
+      const status = formatTaskStatus({ total: change.totalTasks, completed: change.completedTasks });
+      const timeAgo = formatRelativeTime(change.lastModified);
+      console.log(`${padding}${scopeLabel}  ${paddedName}     ${status.padEnd(12)}  ${timeAgo}`);
     }
   }
 }

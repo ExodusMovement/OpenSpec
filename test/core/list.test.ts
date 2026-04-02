@@ -135,7 +135,7 @@ Regular text that should be ignored
 
     it('should handle multiple changes with various states', async () => {
       const changesDir = path.join(tempDir, 'openspec', 'changes');
-      
+
       // Complete change
       await fs.mkdir(path.join(changesDir, 'completed'), { recursive: true });
       await fs.writeFile(
@@ -160,6 +160,92 @@ Regular text that should be ignored
       expect(logOutput.some(line => line.includes('completed') && line.includes('✓ Complete'))).toBe(true);
       expect(logOutput.some(line => line.includes('partial') && line.includes('1/3 tasks'))).toBe(true);
       expect(logOutput.some(line => line.includes('no-tasks') && line.includes('No tasks'))).toBe(true);
+    });
+  });
+
+  describe('workspace mode', () => {
+    async function makeWorkspace(root: string, scopes: { name: string; scopePath: string }[]) {
+      const openspecDir = path.join(root, 'openspec');
+      await fs.mkdir(openspecDir, { recursive: true });
+      const yaml = `scopes:\n${scopes.map(s => `  - name: ${s.name}\n    path: ${s.scopePath}`).join('\n')}\n`;
+      await fs.writeFile(path.join(openspecDir, 'workspace.yaml'), yaml, 'utf-8');
+    }
+
+    it('should list changes across all workspace scopes', async () => {
+      const webRoot = path.join(tempDir, 'apps', 'web');
+      const apiRoot = path.join(tempDir, 'apps', 'api');
+      await fs.mkdir(path.join(webRoot, 'openspec', 'changes', 'web-change'), { recursive: true });
+      await fs.mkdir(path.join(apiRoot, 'openspec', 'changes', 'api-change'), { recursive: true });
+      await makeWorkspace(tempDir, [
+        { name: 'web', scopePath: 'apps/web' },
+        { name: 'api', scopePath: 'apps/api' },
+      ]);
+
+      const listCommand = new ListCommand();
+      await listCommand.execute(tempDir, 'changes');
+
+      expect(logOutput).toContain('Changes:');
+      expect(logOutput.some(line => line.includes('[web]') && line.includes('web-change'))).toBe(true);
+      expect(logOutput.some(line => line.includes('[api]') && line.includes('api-change'))).toBe(true);
+    });
+
+    it('should include root-level umbrella changes labelled [root]', async () => {
+      const webRoot = path.join(tempDir, 'apps', 'web');
+      await fs.mkdir(path.join(webRoot, 'openspec', 'changes', 'web-change'), { recursive: true });
+      await fs.mkdir(path.join(tempDir, 'openspec', 'changes', 'umbrella-change'), { recursive: true });
+      await makeWorkspace(tempDir, [{ name: 'web', scopePath: 'apps/web' }]);
+
+      const listCommand = new ListCommand();
+      await listCommand.execute(tempDir, 'changes');
+
+      expect(logOutput.some(line => line.includes('[root]') && line.includes('umbrella-change'))).toBe(true);
+      expect(logOutput.some(line => line.includes('[web]') && line.includes('web-change'))).toBe(true);
+    });
+
+    it('should output JSON with scope field per change', async () => {
+      const webRoot = path.join(tempDir, 'apps', 'web');
+      await fs.mkdir(path.join(webRoot, 'openspec', 'changes', 'web-change'), { recursive: true });
+      await makeWorkspace(tempDir, [{ name: 'web', scopePath: 'apps/web' }]);
+
+      const listCommand = new ListCommand();
+      await listCommand.execute(tempDir, 'changes', { json: true });
+
+      const raw = logOutput.join('\n');
+      const parsed = JSON.parse(raw);
+      expect(parsed.changes).toHaveLength(1);
+      expect(parsed.changes[0].name).toBe('web-change');
+      expect(parsed.changes[0].scope).toBe('web');
+    });
+
+    it('should return empty JSON when no changes exist in workspace', async () => {
+      const webRoot = path.join(tempDir, 'apps', 'web');
+      await fs.mkdir(webRoot, { recursive: true });
+      await makeWorkspace(tempDir, [{ name: 'web', scopePath: 'apps/web' }]);
+
+      const listCommand = new ListCommand();
+      await listCommand.execute(tempDir, 'changes', { json: true });
+
+      const raw = logOutput.join('\n');
+      const parsed = JSON.parse(raw);
+      expect(parsed.changes).toEqual([]);
+    });
+
+    it('should sort workspace changes alphabetically by scope then name when sort=name', async () => {
+      const webRoot = path.join(tempDir, 'apps', 'web');
+      const apiRoot = path.join(tempDir, 'apps', 'api');
+      await fs.mkdir(path.join(webRoot, 'openspec', 'changes', 'z-change'), { recursive: true });
+      await fs.mkdir(path.join(apiRoot, 'openspec', 'changes', 'a-change'), { recursive: true });
+      await makeWorkspace(tempDir, [
+        { name: 'web', scopePath: 'apps/web' },
+        { name: 'api', scopePath: 'apps/api' },
+      ]);
+
+      const listCommand = new ListCommand();
+      await listCommand.execute(tempDir, 'changes', { sort: 'name' });
+
+      const changeLines = logOutput.filter(line => line.includes('[api]') || line.includes('[web]'));
+      expect(changeLines[0]).toContain('[api]');
+      expect(changeLines[1]).toContain('[web]');
     });
   });
 });

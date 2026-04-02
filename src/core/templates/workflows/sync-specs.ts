@@ -20,7 +20,24 @@ This is an **agent-driven** operation - you will read delta specs and directly e
 
 1. **If no change name provided, prompt for selection**
 
-   Run \`openspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results. Use the **AskUserQuestion tool** to let the user select.
+   In workspace mode, show which scope each change belongs to.
 
    Show changes that have delta specs (under \`specs/\` directory).
 
@@ -159,7 +176,24 @@ This is an **agent-driven** operation - you will read delta specs and directly e
 
 1. **If no change name provided, prompt for selection**
 
-   Run \`openspec list --json\` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results. Use the **AskUserQuestion tool** to let the user select.
+   In workspace mode, show which scope each change belongs to.
 
    Show changes that have delta specs (under \`specs/\` directory).
 

@@ -20,7 +20,23 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
 1. **Get active changes**
 
-   Run \`openspec list --json\` to get all active changes.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results. In workspace mode, track which scope each change belongs to.
 
    If no active changes exist, inform user and stop.
 
@@ -267,7 +283,23 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
 1. **Get active changes**
 
-   Run \`openspec list --json\` to get all active changes.
+   Check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
+
+   If workspace.yaml exists, list changes across all scopes:
+   \`\`\`bash
+   (cd <scope.path> && openspec list --json)   # for each scope in workspace.yaml
+   ls openspec/changes/ 2>/dev/null             # umbrella changes at root
+   \`\`\`
+
+   Otherwise:
+   \`\`\`bash
+   openspec list --json
+   \`\`\`
+
+   Aggregate all results. In workspace mode, track which scope each change belongs to.
 
    If no active changes exist, inform user and stop.
 
