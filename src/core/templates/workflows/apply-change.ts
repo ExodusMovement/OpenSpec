@@ -18,12 +18,25 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
 1. **Select the change**
 
-   If a name is provided, use it. Otherwise:
-   - Infer from conversation context if the user mentioned a change
-   - Auto-select if only one active change exists
-   - If ambiguous, check for a workspace manifest (\`cat openspec/workspace.yaml 2>/dev/null\`). If it exists, run \`(cd <scope.path> && openspec list --json)\` for each scope and \`ls openspec/changes/ 2>/dev/null\` for umbrella changes; otherwise run \`openspec list --json\`. Aggregate all results and use the **AskUserQuestion tool** to let the user select, showing which scope each change belongs to
+   First, check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
+   If workspace exists, aggregate all active changes:
+   - Run \`(cd <scope.path> && openspec list --json)\` for each scope in workspace.yaml
+   - Run \`ls openspec/changes/ 2>/dev/null\` for umbrella changes at root
+   - Track scope for each change: \`{ name, scope }\`
+
+   If no workspace, run \`openspec list --json\` and treat all results as scope \`null\`.
+
+   Now select:
+   - If a name is provided via argument: check if it matches exactly one \`{ name, scope }\` pair. If multiple scopes contain that name, use **AskUserQuestion tool** to ask which scope. If exactly one match, use it.
+   - Otherwise, infer from conversation context if the user mentioned a specific change and scope
+   - Auto-select only if exactly one active change exists across the entire workspace
+   - Otherwise use **AskUserQuestion tool** to let the user select, showing \`[scope] change-name\` for each option
+
+   Always announce: "Using change: <name> (scope: <scope>)" and how to override (e.g., \`/opsx:apply <other>\`).
 
 2. **Detect if this is an umbrella change**
 
@@ -34,7 +47,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - If \`links.yaml\` exists: jump to **Umbrella Apply Flow** below.
    - If not found: proceed with standard single-scope flow.
 
-   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+   For single-scope: use the scope path determined in step 1. Run all subsequent openspec commands as \`(cd <scope.path> && openspec ...)\`.
 
 3. **Check status to understand the schema**
    \`\`\`bash
@@ -202,12 +215,25 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
 1. **Select the change**
 
-   If a name is provided, use it. Otherwise:
-   - Infer from conversation context if the user mentioned a change
-   - Auto-select if only one active change exists
-   - If ambiguous, check for a workspace manifest (\`cat openspec/workspace.yaml 2>/dev/null\`). If it exists, run \`(cd <scope.path> && openspec list --json)\` for each scope and \`ls openspec/changes/ 2>/dev/null\` for umbrella changes; otherwise run \`openspec list --json\`. Aggregate all results and use the **AskUserQuestion tool** to let the user select, showing which scope each change belongs to
+   First, check for a workspace manifest:
+   \`\`\`bash
+   cat openspec/workspace.yaml 2>/dev/null
+   \`\`\`
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:apply <other>\`).
+   If workspace exists, aggregate all active changes:
+   - Run \`(cd <scope.path> && openspec list --json)\` for each scope in workspace.yaml
+   - Run \`ls openspec/changes/ 2>/dev/null\` for umbrella changes at root
+   - Track scope for each change: \`{ name, scope }\`
+
+   If no workspace, run \`openspec list --json\` and treat all results as scope \`null\`.
+
+   Now select:
+   - If a name is provided via argument: check if it matches exactly one \`{ name, scope }\` pair. If multiple scopes contain that name, use **AskUserQuestion tool** to ask which scope. If exactly one match, use it.
+   - Otherwise, infer from conversation context if the user mentioned a specific change and scope
+   - Auto-select only if exactly one active change exists across the entire workspace
+   - Otherwise use **AskUserQuestion tool** to let the user select, showing \`[scope] change-name\` for each option
+
+   Always announce: "Using change: <name> (scope: <scope>)" and how to override (e.g., \`/opsx:apply <other>\`).
 
 2. **Detect if this is an umbrella change**
 
@@ -218,7 +244,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - If \`links.yaml\` exists: jump to **Umbrella Apply Flow** below.
    - If not found: proceed with standard single-scope flow.
 
-   For single-scope: if no workspace.yaml, run openspec from current dir. If workspace.yaml exists, read it and determine which scope owns this change, then run openspec as \`(cd <scope.path> && openspec ...)\`.
+   For single-scope: use the scope path determined in step 1. Run all subsequent openspec commands as \`(cd <scope.path> && openspec ...)\`.
 
 3. **Check status to understand the schema**
    \`\`\`bash

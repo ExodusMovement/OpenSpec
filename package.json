@@ -1,6 +1,6 @@
 {
   "name": "@exodus/openspec",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "AI-native system for spec-driven development",
   "keywords": [
     "openspec",
