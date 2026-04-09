@@ -83,18 +83,19 @@ export function getSkillTemplates(workflowFilter?: readonly string[], ctx?: Skil
  * Gets command templates with their IDs, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return templates whose id is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getCommandTemplates(workflowFilter?: readonly string[]): CommandTemplateEntry[] {
+export function getCommandTemplates(workflowFilter?: readonly string[], ctx?: SkillContext): CommandTemplateEntry[] {
   const all: CommandTemplateEntry[] = [
-    { template: getOpsxExploreCommandTemplate(), id: 'explore' },
+    { template: getOpsxExploreCommandTemplate(ctx), id: 'explore' },
     { template: getOpsxNewCommandTemplate(), id: 'new' },
     { template: getOpsxContinueCommandTemplate(), id: 'continue' },
-    { template: getOpsxApplyCommandTemplate(), id: 'apply' },
+    { template: getOpsxApplyCommandTemplate(ctx), id: 'apply' },
     { template: getOpsxFfCommandTemplate(), id: 'ff' },
     { template: getOpsxSyncCommandTemplate(), id: 'sync' },
-    { template: getOpsxArchiveCommandTemplate(), id: 'archive' },
+    { template: getOpsxArchiveCommandTemplate(ctx), id: 'archive' },
     { template: getOpsxBulkArchiveCommandTemplate(), id: 'bulk-archive' },
-    { template: getOpsxVerifyCommandTemplate(), id: 'verify' },
+    { template: getOpsxVerifyCommandTemplate(ctx), id: 'verify' },
     { template: getOpsxOnboardCommandTemplate(), id: 'onboard' },
     { template: getOpsxProposeCommandTemplate(), id: 'propose' },
   ];
@@ -109,9 +110,10 @@ export function getCommandTemplates(workflowFilter?: readonly string[]): Command
  * Converts command templates to CommandContent array, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return contents whose id is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getCommandContents(workflowFilter?: readonly string[]): CommandContent[] {
-  const commandTemplates = getCommandTemplates(workflowFilter);
+export function getCommandContents(workflowFilter?: readonly string[], ctx?: SkillContext): CommandContent[] {
+  const commandTemplates = getCommandTemplates(workflowFilter, ctx);
   return commandTemplates.map(({ template, id }) => ({
     id,
     name: template.name,

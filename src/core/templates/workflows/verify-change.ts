@@ -200,7 +200,13 @@ Before marking the change as verified (step 8), invoke \`superpowers:verificatio
   };
 }
 
-export function getOpsxVerifyCommandTemplate(): CommandTemplate {
+export function getOpsxVerifyCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+After generating the verification report in step 8, invoke \`superpowers:verification-before-completion\` before declaring the change ready for archive.` : '';
+
   return {
     name: 'OPSX: Verify',
     description: 'Verify implementation matches change artifacts before archiving',
@@ -368,6 +374,6 @@ Use clear markdown with:
 - Grouped lists for issues (CRITICAL/WARNING/SUGGESTION)
 - Code references in format: \`file.ts:123\`
 - Specific, actionable recommendations
-- No vague suggestions like "consider reviewing"`
+- No vague suggestions like "consider reviewing"${superpowersSection}`
   };
 }

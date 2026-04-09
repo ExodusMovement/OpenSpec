@@ -213,7 +213,17 @@ When all tasks are complete (step 8), invoke \`superpowers:requesting-code-revie
   };
 }
 
-export function getOpsxApplyCommandTemplate(): CommandTemplate {
+export function getOpsxApplyCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before starting each task in step 7, invoke \`superpowers:test-driven-development\` — write the failing test before any production code.
+
+If you hit an unexpected error during implementation, invoke \`superpowers:systematic-debugging\` before guessing or trying random fixes.
+
+When all tasks are complete (step 8), invoke \`superpowers:requesting-code-review\` to trigger a code review, then \`superpowers:receiving-code-review\` to process the feedback and complete the cycle.` : '';
+
   return {
     name: 'OPSX: Apply',
     description: 'Implement tasks from an OpenSpec change (Experimental)',
@@ -398,6 +408,6 @@ What would you like to do?
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly${superpowersSection}`
   };
 }

@@ -550,7 +550,7 @@ export class InitCommand {
     const shouldGenerateSkills = delivery !== 'commands';
     const shouldGenerateCommands = delivery !== 'skills';
     const skillTemplates = shouldGenerateSkills ? getSkillTemplates(workflows, ctx) : [];
-    const commandContents = shouldGenerateCommands ? getCommandContents(workflows) : [];
+    const commandContents = shouldGenerateCommands ? getCommandContents(workflows, ctx) : [];
 
     // Process each tool
     for (const tool of tools) {

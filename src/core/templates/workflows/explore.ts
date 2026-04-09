@@ -328,7 +328,13 @@ When a bug or unexpected behavior surfaces during exploration, invoke \`superpow
   };
 }
 
-export function getOpsxExploreCommandTemplate(): CommandTemplate {
+export function getOpsxExploreCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+When a bug or unexpected behavior surfaces during exploration, invoke \`superpowers:systematic-debugging\` before theorizing.` : '';
+
   return {
     name: 'OPSX: Explore',
     description: 'Enter explore mode - think through ideas, investigate problems, clarify requirements',
@@ -521,6 +527,6 @@ When things crystallize, you might offer a summary - but it's optional. Sometime
 - **Don't auto-capture** - Offer to save insights, don't just do it
 - **Do visualize** - A good diagram is worth many paragraphs
 - **Do explore the codebase** - Ground discussions in reality
-- **Do question assumptions** - Including the user's and your own`
+- **Do question assumptions** - Including the user's and your own${superpowersSection}`
   };
 }

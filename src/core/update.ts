@@ -182,7 +182,7 @@ export class UpdateCommand {
     const skillCtx: SkillContext = { superpowers: enhanceWithSuperpowers };
 
     const skillTemplates = shouldGenerateSkills ? getSkillTemplates(desiredWorkflows, skillCtx) : [];
-    const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows) : [];
+    const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows, skillCtx) : [];
 
     // 10. Update tools (all if force, otherwise only those needing update)
     const toolsToUpdate = this.force ? configuredTools : [...toolsToUpdateSet];

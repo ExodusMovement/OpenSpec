@@ -169,7 +169,13 @@ After archiving, use the \`github-cli\` skill to open a pull request for the com
   };
 }
 
-export function getOpsxArchiveCommandTemplate(): CommandTemplate {
+export function getOpsxArchiveCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before performing step 6 (the archive), invoke \`superpowers:finishing-a-development-branch\` to run branch hygiene checks and ensure the branch is ready.` : '';
+
   return {
     name: 'OPSX: Archive',
     description: 'Archive a completed change in the experimental workflow',
@@ -359,6 +365,6 @@ Target archive directory already exists.
 - Show clear summary of what happened
 - If sync is requested, use the Skill tool to invoke \`openspec-sync-specs\` (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
-- For umbrella changes, complete one scope fully before starting the next`
+- For umbrella changes, complete one scope fully before starting the next${superpowersSection}`
   };
 }
