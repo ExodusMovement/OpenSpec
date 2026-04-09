@@ -23,6 +23,11 @@ vi.mock('../../src/prompts/searchable-multi-select.js', () => ({
   searchableMultiSelect: searchableMultiSelectMock,
 }));
 
+vi.mock('../../src/core/superpowers-detection.js', () => ({
+  detectSuperpowers: vi.fn(() => ({ installed: false })),
+  shouldEnhanceWithSuperpowers: vi.fn(() => false),
+}));
+
 describe('InitCommand', () => {
   let testDir: string;
   let configTempDir: string;
