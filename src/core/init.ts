@@ -43,6 +43,10 @@ import {
   type ToolSkillStatus,
 } from './shared/index.js';
 import { getGlobalConfig, type Delivery, type Profile } from './global-config.js';
+import { detectSuperpowers, shouldEnhanceWithSuperpowers } from './superpowers-detection.js';
+import { injectSuperpowersTddRules } from './superpowers-config.js';
+import { writeSuperpowersMeta } from './superpowers-meta.js';
+import type { SkillContext } from './shared/index.js';
 import { getProfileWorkflows, CORE_WORKFLOWS, ALL_WORKFLOWS } from './profiles.js';
 import { getAvailableTools } from './available-tools.js';
 import { migrateIfNeeded } from './migration.js';
@@ -149,11 +153,28 @@ export class InitCommand {
     // Detect monorepo and offer workspace setup
     await this.handleWorkspaceDetection(projectPath, extendMode);
 
+    // Detect Superpowers and build skill context
+    const spDetection = detectSuperpowers();
+    const globalConfigForSp = getGlobalConfig();
+    const optOut = globalConfigForSp.superpowers?.enabled === false;
+    const enhanceWithSuperpowers = shouldEnhanceWithSuperpowers(selectedToolIds, spDetection, optOut);
+    const skillCtx: SkillContext = { superpowers: enhanceWithSuperpowers };
+
     // Generate skills and commands for each tool
-    const results = await this.generateSkillsAndCommands(projectPath, validatedTools);
+    const results = await this.generateSkillsAndCommands(projectPath, validatedTools, skillCtx);
 
     // Create config.yaml if needed
     const configStatus = await this.createConfig(openspecPath, extendMode);
+
+    // Inject Superpowers TDD rules into config.yaml if enhanced
+    if (enhanceWithSuperpowers && spDetection.installPath) {
+      const injectionResult = await injectSuperpowersTddRules(path.join(openspecPath));
+      const configPatched = injectionResult === 'injected' || injectionResult === 'already-present';
+      if (injectionResult === 'no-config') {
+        console.log(chalk.yellow('\n  Superpowers: no config.yaml found — TDD rules not injected. Create openspec/config.yaml to enable.'));
+      }
+      await writeSuperpowersMeta(openspecPath, { installPath: spDetection.installPath, configPatched });
+    }
 
     // Display success message
     this.displaySuccessMessage(projectPath, validatedTools, results, configStatus);
@@ -498,7 +519,8 @@ export class InitCommand {
 
   private async generateSkillsAndCommands(
     projectPath: string,
-    tools: Array<{ value: string; name: string; skillsDir: string; wasConfigured: boolean }>
+    tools: Array<{ value: string; name: string; skillsDir: string; wasConfigured: boolean }>,
+    ctx?: SkillContext
   ): Promise<{
     createdTools: typeof tools;
     refreshedTools: typeof tools;
@@ -527,7 +549,7 @@ export class InitCommand {
     // Get skill and command templates filtered by profile workflows
     const shouldGenerateSkills = delivery !== 'commands';
     const shouldGenerateCommands = delivery !== 'skills';
-    const skillTemplates = shouldGenerateSkills ? getSkillTemplates(workflows) : [];
+    const skillTemplates = shouldGenerateSkills ? getSkillTemplates(workflows, ctx) : [];
     const commandContents = shouldGenerateCommands ? getCommandContents(workflows) : [];
 
     // Process each tool
@@ -775,6 +797,7 @@ export class InitCommand {
     }
 
     console.log();
+    console.log(chalk.dim('Tip: If you use Superpowers, run: openspec superpowers setup'));
   }
 
   private startSpinner(text: string) {

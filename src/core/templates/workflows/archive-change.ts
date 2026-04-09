@@ -5,12 +5,10 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getArchiveChangeSkillTemplate(): SkillTemplate {
-  return {
-    name: 'openspec-archive-change',
-    description: 'Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.',
-    instructions: `Archive a completed change in the experimental workflow.
+export function getArchiveChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
+  const baseInstructions = `Archive a completed change in the experimental workflow.
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -147,7 +145,24 @@ All artifacts complete. All tasks complete.
 - Show clear summary of what happened
 - If sync is requested, use openspec-sync-specs approach (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
-- For umbrella changes, complete one scope fully before starting the next`,
+- For umbrella changes, complete one scope fully before starting the next`;
+
+  const superpowersAddition = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before performing the archive (step 6), invoke \`superpowers:finishing-a-development-branch\` to run branch hygiene checks and ensure the branch is ready.
+
+After archiving, use the \`github-cli\` skill to open a pull request for the completed change.` : '';
+
+  const instructions = ctx?.superpowers
+    ? `<!-- openspec-superpowers-enhanced: true -->\n\n${baseInstructions}${superpowersAddition}`
+    : baseInstructions;
+
+  return {
+    name: 'openspec-archive-change',
+    description: 'Archive a completed change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete.',
+    instructions,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },

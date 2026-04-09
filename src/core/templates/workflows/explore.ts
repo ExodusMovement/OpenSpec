@@ -5,12 +5,10 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getExploreSkillTemplate(): SkillTemplate {
-  return {
-    name: 'openspec-explore',
-    description: 'Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.',
-    instructions: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
+export function getExploreSkillTemplate(ctx?: SkillContext): SkillTemplate {
+  const baseInstructions = `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
 **IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create OpenSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.
 
@@ -308,7 +306,22 @@ But this summary is optional. Sometimes the thinking IS the value.
 - **Don't auto-capture** - Offer to save insights, don't just do it
 - **Do visualize** - A good diagram is worth many paragraphs
 - **Do explore the codebase** - Ground discussions in reality
-- **Do question assumptions** - Including the user's and your own`,
+- **Do question assumptions** - Including the user's and your own`;
+
+  const superpowersAddition = ctx?.superpowers ? `
+
+## Debugging Within Explore
+
+When a bug or unexpected behavior surfaces during exploration, invoke \`superpowers:systematic-debugging\` before theorizing. Systematic investigation beats intuition: reproduce the issue, form a hypothesis, test it, narrow the cause.` : '';
+
+  const instructions = ctx?.superpowers
+    ? `<!-- openspec-superpowers-enhanced: true -->\n\n${baseInstructions}${superpowersAddition}`
+    : baseInstructions;
+
+  return {
+    name: 'openspec-explore',
+    description: 'Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.',
+    instructions,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },

@@ -4,6 +4,10 @@
  * Shared utilities for generating skill and command files.
  */
 
+export interface SkillContext {
+  superpowers?: boolean;
+}
+
 import {
   getExploreSkillTemplate,
   getNewChangeSkillTemplate,
@@ -52,20 +56,21 @@ export interface CommandTemplateEntry {
  * Gets skill templates with their directory names, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return templates whose workflowId is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemplateEntry[] {
+export function getSkillTemplates(workflowFilter?: readonly string[], ctx?: SkillContext): SkillTemplateEntry[] {
   const all: SkillTemplateEntry[] = [
-    { template: getExploreSkillTemplate(), dirName: 'openspec-explore', workflowId: 'explore' },
-    { template: getNewChangeSkillTemplate(), dirName: 'openspec-new-change', workflowId: 'new' },
-    { template: getContinueChangeSkillTemplate(), dirName: 'openspec-continue-change', workflowId: 'continue' },
-    { template: getApplyChangeSkillTemplate(), dirName: 'openspec-apply-change', workflowId: 'apply' },
-    { template: getFfChangeSkillTemplate(), dirName: 'openspec-ff-change', workflowId: 'ff' },
-    { template: getSyncSpecsSkillTemplate(), dirName: 'openspec-sync-specs', workflowId: 'sync' },
-    { template: getArchiveChangeSkillTemplate(), dirName: 'openspec-archive-change', workflowId: 'archive' },
-    { template: getBulkArchiveChangeSkillTemplate(), dirName: 'openspec-bulk-archive-change', workflowId: 'bulk-archive' },
-    { template: getVerifyChangeSkillTemplate(), dirName: 'openspec-verify-change', workflowId: 'verify' },
-    { template: getOnboardSkillTemplate(), dirName: 'openspec-onboard', workflowId: 'onboard' },
-    { template: getOpsxProposeSkillTemplate(), dirName: 'openspec-propose', workflowId: 'propose' },
+    { template: getExploreSkillTemplate(ctx), dirName: 'openspec-explore', workflowId: 'explore' },
+    { template: getNewChangeSkillTemplate(ctx), dirName: 'openspec-new-change', workflowId: 'new' },
+    { template: getContinueChangeSkillTemplate(ctx), dirName: 'openspec-continue-change', workflowId: 'continue' },
+    { template: getApplyChangeSkillTemplate(ctx), dirName: 'openspec-apply-change', workflowId: 'apply' },
+    { template: getFfChangeSkillTemplate(ctx), dirName: 'openspec-ff-change', workflowId: 'ff' },
+    { template: getSyncSpecsSkillTemplate(ctx), dirName: 'openspec-sync-specs', workflowId: 'sync' },
+    { template: getArchiveChangeSkillTemplate(ctx), dirName: 'openspec-archive-change', workflowId: 'archive' },
+    { template: getBulkArchiveChangeSkillTemplate(ctx), dirName: 'openspec-bulk-archive-change', workflowId: 'bulk-archive' },
+    { template: getVerifyChangeSkillTemplate(ctx), dirName: 'openspec-verify-change', workflowId: 'verify' },
+    { template: getOnboardSkillTemplate(ctx), dirName: 'openspec-onboard', workflowId: 'onboard' },
+    { template: getOpsxProposeSkillTemplate(ctx), dirName: 'openspec-propose', workflowId: 'propose' },
   ];
 
   if (!workflowFilter) return all;

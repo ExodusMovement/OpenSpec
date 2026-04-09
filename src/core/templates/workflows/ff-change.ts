@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getFfChangeSkillTemplate(): SkillTemplate {
+export function getFfChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'openspec-ff-change',
     description: 'Fast-forward through OpenSpec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually.',

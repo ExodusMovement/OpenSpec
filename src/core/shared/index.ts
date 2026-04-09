@@ -21,6 +21,7 @@ export {
 } from './tool-detection.js';
 
 export {
+  type SkillContext,
   type SkillTemplateEntry,
   type CommandTemplateEntry,
   getSkillTemplates,

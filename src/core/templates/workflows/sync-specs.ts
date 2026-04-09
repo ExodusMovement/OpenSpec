@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getSyncSpecsSkillTemplate(): SkillTemplate {
+export function getSyncSpecsSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'openspec-sync-specs',
     description: 'Sync delta specs from a change to main specs. Use when the user wants to update main specs with changes from a delta spec, without archiving the change.',

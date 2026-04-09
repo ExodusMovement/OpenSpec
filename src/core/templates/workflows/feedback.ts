@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getFeedbackSkillTemplate(): SkillTemplate {
+export function getFeedbackSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'feedback',
     description: 'Collect and submit user feedback about OpenSpec with context enrichment and anonymization.',

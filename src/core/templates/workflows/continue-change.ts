@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getContinueChangeSkillTemplate(): SkillTemplate {
+export function getContinueChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'openspec-continue-change',
     description: 'Continue working on an OpenSpec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow.',

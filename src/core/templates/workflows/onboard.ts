@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getOnboardSkillTemplate(): SkillTemplate {
+export function getOnboardSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'openspec-onboard',
     description: 'Guided onboarding for OpenSpec - walk through a complete workflow cycle with narration and real codebase work.',

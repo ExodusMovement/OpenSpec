@@ -5,8 +5,9 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getBulkArchiveChangeSkillTemplate(): SkillTemplate {
+export function getBulkArchiveChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
   return {
     name: 'openspec-bulk-archive-change',
     description: 'Archive multiple completed changes at once. Use when archiving several parallel changes.',

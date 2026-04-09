@@ -12,11 +12,16 @@ export type Profile = 'core' | 'custom';
 export type Delivery = 'both' | 'skills' | 'commands';
 
 // TypeScript interfaces
+export interface SuperpowersConfig {
+  enabled?: boolean;
+}
+
 export interface GlobalConfig {
   featureFlags?: Record<string, boolean>;
   profile?: Profile;
   delivery?: Delivery;
   workflows?: string[];
+  superpowers?: SuperpowersConfig;
 }
 
 const DEFAULT_CONFIG: GlobalConfig = {
