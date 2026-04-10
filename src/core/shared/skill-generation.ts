@@ -4,6 +4,10 @@
  * Shared utilities for generating skill and command files.
  */
 
+export interface SkillContext {
+  superpowers?: boolean;
+}
+
 import {
   getExploreSkillTemplate,
   getNewChangeSkillTemplate,
@@ -52,20 +56,21 @@ export interface CommandTemplateEntry {
  * Gets skill templates with their directory names, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return templates whose workflowId is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemplateEntry[] {
+export function getSkillTemplates(workflowFilter?: readonly string[], ctx?: SkillContext): SkillTemplateEntry[] {
   const all: SkillTemplateEntry[] = [
-    { template: getExploreSkillTemplate(), dirName: 'openspec-explore', workflowId: 'explore' },
-    { template: getNewChangeSkillTemplate(), dirName: 'openspec-new-change', workflowId: 'new' },
-    { template: getContinueChangeSkillTemplate(), dirName: 'openspec-continue-change', workflowId: 'continue' },
-    { template: getApplyChangeSkillTemplate(), dirName: 'openspec-apply-change', workflowId: 'apply' },
-    { template: getFfChangeSkillTemplate(), dirName: 'openspec-ff-change', workflowId: 'ff' },
-    { template: getSyncSpecsSkillTemplate(), dirName: 'openspec-sync-specs', workflowId: 'sync' },
-    { template: getArchiveChangeSkillTemplate(), dirName: 'openspec-archive-change', workflowId: 'archive' },
-    { template: getBulkArchiveChangeSkillTemplate(), dirName: 'openspec-bulk-archive-change', workflowId: 'bulk-archive' },
-    { template: getVerifyChangeSkillTemplate(), dirName: 'openspec-verify-change', workflowId: 'verify' },
-    { template: getOnboardSkillTemplate(), dirName: 'openspec-onboard', workflowId: 'onboard' },
-    { template: getOpsxProposeSkillTemplate(), dirName: 'openspec-propose', workflowId: 'propose' },
+    { template: getExploreSkillTemplate(ctx), dirName: 'openspec-explore', workflowId: 'explore' },
+    { template: getNewChangeSkillTemplate(ctx), dirName: 'openspec-new-change', workflowId: 'new' },
+    { template: getContinueChangeSkillTemplate(ctx), dirName: 'openspec-continue-change', workflowId: 'continue' },
+    { template: getApplyChangeSkillTemplate(ctx), dirName: 'openspec-apply-change', workflowId: 'apply' },
+    { template: getFfChangeSkillTemplate(ctx), dirName: 'openspec-ff-change', workflowId: 'ff' },
+    { template: getSyncSpecsSkillTemplate(ctx), dirName: 'openspec-sync-specs', workflowId: 'sync' },
+    { template: getArchiveChangeSkillTemplate(ctx), dirName: 'openspec-archive-change', workflowId: 'archive' },
+    { template: getBulkArchiveChangeSkillTemplate(ctx), dirName: 'openspec-bulk-archive-change', workflowId: 'bulk-archive' },
+    { template: getVerifyChangeSkillTemplate(ctx), dirName: 'openspec-verify-change', workflowId: 'verify' },
+    { template: getOnboardSkillTemplate(ctx), dirName: 'openspec-onboard', workflowId: 'onboard' },
+    { template: getOpsxProposeSkillTemplate(ctx), dirName: 'openspec-propose', workflowId: 'propose' },
   ];
 
   if (!workflowFilter) return all;
@@ -78,18 +83,19 @@ export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemp
  * Gets command templates with their IDs, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return templates whose id is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getCommandTemplates(workflowFilter?: readonly string[]): CommandTemplateEntry[] {
+export function getCommandTemplates(workflowFilter?: readonly string[], ctx?: SkillContext): CommandTemplateEntry[] {
   const all: CommandTemplateEntry[] = [
-    { template: getOpsxExploreCommandTemplate(), id: 'explore' },
+    { template: getOpsxExploreCommandTemplate(ctx), id: 'explore' },
     { template: getOpsxNewCommandTemplate(), id: 'new' },
     { template: getOpsxContinueCommandTemplate(), id: 'continue' },
-    { template: getOpsxApplyCommandTemplate(), id: 'apply' },
+    { template: getOpsxApplyCommandTemplate(ctx), id: 'apply' },
     { template: getOpsxFfCommandTemplate(), id: 'ff' },
     { template: getOpsxSyncCommandTemplate(), id: 'sync' },
-    { template: getOpsxArchiveCommandTemplate(), id: 'archive' },
+    { template: getOpsxArchiveCommandTemplate(ctx), id: 'archive' },
     { template: getOpsxBulkArchiveCommandTemplate(), id: 'bulk-archive' },
-    { template: getOpsxVerifyCommandTemplate(), id: 'verify' },
+    { template: getOpsxVerifyCommandTemplate(ctx), id: 'verify' },
     { template: getOpsxOnboardCommandTemplate(), id: 'onboard' },
     { template: getOpsxProposeCommandTemplate(), id: 'propose' },
   ];
@@ -104,9 +110,10 @@ export function getCommandTemplates(workflowFilter?: readonly string[]): Command
  * Converts command templates to CommandContent array, optionally filtered by workflow IDs.
  *
  * @param workflowFilter - If provided, only return contents whose id is in this array
+ * @param ctx - Optional skill generation context (e.g. superpowers enhancement)
  */
-export function getCommandContents(workflowFilter?: readonly string[]): CommandContent[] {
-  const commandTemplates = getCommandTemplates(workflowFilter);
+export function getCommandContents(workflowFilter?: readonly string[], ctx?: SkillContext): CommandContent[] {
+  const commandTemplates = getCommandTemplates(workflowFilter, ctx);
   return commandTemplates.map(({ template, id }) => ({
     id,
     name: template.name,

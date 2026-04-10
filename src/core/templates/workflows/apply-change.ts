@@ -5,12 +5,10 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getApplyChangeSkillTemplate(): SkillTemplate {
-  return {
-    name: 'openspec-apply-change',
-    description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.',
-    instructions: `Implement tasks from an OpenSpec change.
+export function getApplyChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
+  const baseInstructions = `Implement tasks from an OpenSpec change.
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -189,14 +187,43 @@ What would you like to do?
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`,
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`;
+
+  const superpowersAddition = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before starting each task in step 7, invoke \`superpowers:test-driven-development\` — write the failing test before any production code.
+
+If you hit an unexpected error during implementation, invoke \`superpowers:systematic-debugging\` before guessing or trying random fixes.
+
+When all tasks are complete (step 8), invoke \`superpowers:requesting-code-review\` to trigger a code review, then \`superpowers:receiving-code-review\` to process the feedback and complete the cycle.` : '';
+
+  const instructions = ctx?.superpowers
+    ? `<!-- openspec-superpowers-enhanced: true -->\n\n${baseInstructions}${superpowersAddition}`
+    : baseInstructions;
+
+  return {
+    name: 'openspec-apply-change',
+    description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.',
+    instructions,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },
   };
 }
 
-export function getOpsxApplyCommandTemplate(): CommandTemplate {
+export function getOpsxApplyCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before starting each task in step 7, invoke \`superpowers:test-driven-development\` — write the failing test before any production code.
+
+If you hit an unexpected error during implementation, invoke \`superpowers:systematic-debugging\` before guessing or trying random fixes.
+
+When all tasks are complete (step 8), invoke \`superpowers:requesting-code-review\` to trigger a code review, then \`superpowers:receiving-code-review\` to process the feedback and complete the cycle.` : '';
+
   return {
     name: 'OPSX: Apply',
     description: 'Implement tasks from an OpenSpec change (Experimental)',
@@ -381,6 +408,6 @@ What would you like to do?
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly${superpowersSection}`
   };
 }

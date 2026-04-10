@@ -5,12 +5,10 @@
  * templates file into workflow-focused modules.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import type { SkillContext } from '../../shared/skill-generation.js';
 
-export function getVerifyChangeSkillTemplate(): SkillTemplate {
-  return {
-    name: 'openspec-verify-change',
-    description: 'Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.',
-    instructions: `Verify that an implementation matches the change artifacts (specs, tasks, design).
+export function getVerifyChangeSkillTemplate(ctx?: SkillContext): SkillTemplate {
+  const baseInstructions = `Verify that an implementation matches the change artifacts (specs, tasks, design).
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -172,14 +170,43 @@ Use clear markdown with:
 - Grouped lists for issues (CRITICAL/WARNING/SUGGESTION)
 - Code references in format: \`file.ts:123\`
 - Specific, actionable recommendations
-- No vague suggestions like "consider reviewing"`,
+- No vague suggestions like "consider reviewing"
+
+**CI Failure Investigation**
+
+If CI is failing or test failures are blocking verification, use the ci-investigation approach:
+- Check CI logs for specific failure messages
+- Identify whether failures are flaky tests, environment issues, or real regressions
+- For environment issues: check config, secrets, dependencies
+- For test failures: trace the failure to the specific change and assess if it's a real bug`;
+
+  const superpowersAddition = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+Before marking the change as verified (step 8), invoke \`superpowers:verification-before-completion\` to run a structured pre-completion checklist.` : '';
+
+  const instructions = ctx?.superpowers
+    ? `<!-- openspec-superpowers-enhanced: true -->\n\n${baseInstructions}${superpowersAddition}`
+    : baseInstructions;
+
+  return {
+    name: 'openspec-verify-change',
+    description: 'Verify implementation matches change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving.',
+    instructions,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },
   };
 }
 
-export function getOpsxVerifyCommandTemplate(): CommandTemplate {
+export function getOpsxVerifyCommandTemplate(ctx?: SkillContext): CommandTemplate {
+  const superpowersSection = ctx?.superpowers ? `
+
+## Superpowers Enhancement
+
+After generating the verification report in step 8, invoke \`superpowers:verification-before-completion\` before declaring the change ready for archive.` : '';
+
   return {
     name: 'OPSX: Verify',
     description: 'Verify implementation matches change artifacts before archiving',
@@ -347,6 +374,6 @@ Use clear markdown with:
 - Grouped lists for issues (CRITICAL/WARNING/SUGGESTION)
 - Code references in format: \`file.ts:123\`
 - Specific, actionable recommendations
-- No vague suggestions like "consider reviewing"`
+- No vague suggestions like "consider reviewing"${superpowersSection}`
   };
 }

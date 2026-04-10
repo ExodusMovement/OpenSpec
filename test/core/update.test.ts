@@ -18,6 +18,12 @@ const mockState = {
   } as GlobalConfig,
 };
 
+// Mock superpowers detection to isolate tests from machine state
+vi.mock('../../src/core/superpowers-detection.js', () => ({
+  detectSuperpowers: vi.fn(() => ({ installed: false })),
+  shouldEnhanceWithSuperpowers: vi.fn(() => false),
+}));
+
 // Mock global config module to isolate tests from the machine's actual config
 vi.mock('../../src/core/global-config.js', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/core/global-config.js')>();
@@ -686,8 +692,8 @@ Old version content
         'utf-8'
       );
 
-      // Should contain generatedBy field
-      expect(updatedContent).toMatch(/generatedBy:\s*["']\d+\.\d+\.\d+["']/);
+      // Should contain generatedBy field (supports stable and pre-release versions)
+      expect(updatedContent).toMatch(/generatedBy:\s*["'][\d.a-zA-Z-]+["']/);
     });
   });
 

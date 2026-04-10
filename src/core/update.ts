@@ -36,6 +36,10 @@ import {
 } from './legacy-cleanup.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getGlobalConfig, type Delivery } from './global-config.js';
+import { detectSuperpowers, shouldEnhanceWithSuperpowers } from './superpowers-detection.js';
+import { injectSuperpowersTddRules } from './superpowers-config.js';
+import { writeSuperpowersMeta } from './superpowers-meta.js';
+import type { SkillContext } from './shared/index.js';
 import { getProfileWorkflows, ALL_WORKFLOWS } from './profiles.js';
 import { getAvailableTools } from './available-tools.js';
 import {
@@ -170,8 +174,15 @@ export class UpdateCommand {
     // 9. Determine what to generate based on delivery
     const projectConfig = readProjectConfig(resolvedProjectPath);
     const cliTransformer = createCliTransformer(projectConfig?.cli);
-    const skillTemplates = shouldGenerateSkills ? getSkillTemplates(desiredWorkflows) : [];
-    const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows) : [];
+
+    // Detect Superpowers and build skill context
+    const spDetection = detectSuperpowers(undefined, resolvedProjectPath);
+    const optOut = globalConfig.superpowers?.enabled === false;
+    const enhanceWithSuperpowers = shouldEnhanceWithSuperpowers(configuredTools, spDetection, optOut);
+    const skillCtx: SkillContext = { superpowers: enhanceWithSuperpowers };
+
+    const skillTemplates = shouldGenerateSkills ? getSkillTemplates(desiredWorkflows, skillCtx) : [];
+    const commandContents = shouldGenerateCommands ? getCommandContents(desiredWorkflows, skillCtx) : [];
 
     // 10. Update tools (all if force, otherwise only those needing update)
     const toolsToUpdate = this.force ? configuredTools : [...toolsToUpdateSet];
@@ -296,8 +307,19 @@ export class UpdateCommand {
       console.log(chalk.dim(`Tools: ${toolDisplayNames.join(', ')}`));
     }
 
+    // Inject Superpowers TDD rules into config.yaml if enhanced
+    if (enhanceWithSuperpowers && spDetection.installPath) {
+      const injectionResult = await injectSuperpowersTddRules(openspecPath);
+      const configPatched = injectionResult === 'injected' || injectionResult === 'already-present';
+      if (injectionResult === 'no-config') {
+        console.log(chalk.yellow('\n  Superpowers: no config.yaml found — TDD rules not injected. Create openspec/config.yaml to enable.'));
+      }
+      await writeSuperpowersMeta(openspecPath, { installPath: spDetection.installPath, configPatched });
+    }
+
     console.log();
     console.log(chalk.dim('Restart your IDE for changes to take effect.'));
+    console.log(chalk.dim('Tip: If you use Superpowers, run: openspec superpowers setup'));
   }
 
   /**

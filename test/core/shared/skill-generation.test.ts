@@ -4,6 +4,7 @@ import {
   getCommandTemplates,
   getCommandContents,
   generateSkillContent,
+  type SkillContext,
 } from '../../../src/core/shared/skill-generation.js';
 
 describe('skill-generation', () => {
@@ -84,6 +85,25 @@ describe('skill-generation', () => {
       expect(filtered).toHaveLength(1);
       expect(filtered[0].workflowId).toBe('propose');
       expect(filtered[0].dirName).toBe('openspec-propose');
+    });
+
+    it('accepts SkillContext as second argument without breaking', () => {
+      const ctx: SkillContext = { superpowers: false };
+      const templates = getSkillTemplates(undefined, ctx);
+      expect(templates).toHaveLength(11);
+    });
+
+    it('returns same count with or without ctx', () => {
+      const withCtx = getSkillTemplates(undefined, { superpowers: true });
+      const withoutCtx = getSkillTemplates(undefined);
+      expect(withCtx).toHaveLength(withoutCtx.length);
+    });
+
+    it('filters correctly when ctx is provided', () => {
+      const filtered = getSkillTemplates(['apply', 'verify'], { superpowers: true });
+      expect(filtered).toHaveLength(2);
+      expect(filtered.map(t => t.workflowId)).toContain('apply');
+      expect(filtered.map(t => t.workflowId)).toContain('verify');
     });
   });
 
